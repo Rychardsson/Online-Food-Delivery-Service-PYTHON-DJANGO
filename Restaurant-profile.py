@@ -74,13 +74,11 @@ class Prices:
         return prices_info
 
 
-# User input to create or update the restaurant
 restaurant_name = input("Enter the restaurant name: ")
 restaurant_location = input("Enter the restaurant location: ")
 
 my_restaurant = Restaurant(restaurant_name, restaurant_location)
 
-# Add items to the menu
 while True:
     item_name = input("Enter the menu item name (or 'exit' to quit): ")
     if item_name.lower() == 'exit':
@@ -92,7 +90,6 @@ while True:
     menu_item = MenuItem(item_name, item_description, item_price)
     my_restaurant.menu.add_item(menu_item)
 
-# Set prices
 while True:
     item_name = input("Enter the item name to set the price (or 'exit' to quit): ")
     if item_name.lower() == 'exit':
@@ -101,13 +98,10 @@ while True:
     item_price = float(input(f"Enter the price for {item_name}: "))
     my_restaurant.prices.set_price(item_name, item_price)
 
-# Save to JSON
 json_file_name = input("Enter the JSON file name to save: ")
 my_restaurant.save_to_json(json_file_name)
 
-# Load from JSON
 json_file_to_load = input("Enter the JSON file name to load: ")
 my_restaurant.load_from_json(json_file_to_load)
 
-# Display profile after loading
 print(my_restaurant.display_profile())
