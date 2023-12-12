@@ -23,7 +23,6 @@ class PayPalPayment(Payment):
         self.email = email
 
     def process_payment(self):
-        # Implement PayPal payment processing logic here
         print(f"Processing PayPal payment of ${self.amount}")
 
 
@@ -33,7 +32,6 @@ class BitcoinPayment(Payment):
         self.bitcoin_address = bitcoin_address
 
     def process_payment(self):
-        # Implement Bitcoin payment processing logic here
         print(f"Processing Bitcoin payment of ${self.amount}")
 
 
