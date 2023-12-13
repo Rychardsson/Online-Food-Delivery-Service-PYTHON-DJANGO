@@ -35,7 +35,6 @@ class Restaurant:
         conn.commit()
         conn.close()
 
-    @staticmethod
     def create_tables():
         conn = sqlite3.connect('restaurant_data.db')
         cursor = conn.cursor()
