@@ -379,4 +379,4 @@ Os resultados serão exibidos no console.
 
 
 SQLITE:
-![Alt text](image.png)
+![Alt text](https://github.com/Rychardsson/Online-Food-Delivery-Service-PYTHON-DJANGO/blob/main/imagem/Captura%20de%20tela%202023-12-12%20220849.png?raw=true)
