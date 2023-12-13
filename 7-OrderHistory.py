@@ -1,6 +1,9 @@
+import sqlite3
+
 class Order:
-    def __init__(self, order_id, items, total_price):
+    def __init__(self, order_id, user_id, items, total_price):
         self.order_id = order_id
+        self.user_id = user_id
         self.items = items
         self.total_price = total_price
 
@@ -12,6 +15,33 @@ class Order:
         print(f"Total Price: ${self.total_price:.2f}")
         print("------------------------")
 
+    def save_to_db(self):
+        conn = sqlite3.connect('restaurant_data.db')
+        cursor = conn.cursor()
+        cursor.execute('INSERT INTO orders (order_id, user_id, total_price) VALUES (?, ?, ?)',
+                       (self.order_id, self.user_id, self.total_price))
+        for item in self.items:
+            cursor.execute('INSERT INTO order_items (order_id, item) VALUES (?, ?)',
+                           (self.order_id, item))
+        conn.commit()
+        conn.close()
+
+    def load_from_db(cls, order_id):
+        conn = sqlite3.connect('restaurant_data.db')
+        cursor = conn.cursor()
+
+        cursor.execute('SELECT user_id, total_price FROM orders WHERE order_id=?', (order_id,))
+        result = cursor.fetchone()
+        if result:
+            user_id, total_price = result
+            cursor.execute('SELECT item FROM order_items WHERE order_id=?', (order_id,))
+            items = [item[0] for item in cursor.fetchall()]
+            conn.close()
+            return cls(order_id, user_id, items, total_price)
+        else:
+            conn.close()
+            return None
+
 class User:
     def __init__(self, user_id, name):
         self.user_id = user_id
@@ -20,7 +50,8 @@ class User:
 
     def place_order(self, items, total_price):
         order_id = len(self.orders) + 1
-        new_order = Order(order_id, items, total_price)
+        new_order = Order(order_id, self.user_id, items, total_price)
+        new_order.save_to_db()
         self.orders.append(new_order)
         print(f"Order placed successfully! Order ID: {order_id}")
 
@@ -40,11 +71,21 @@ class User:
         else:
             print("Invalid order ID. Please enter a valid order ID.")
 
+    def load_orders_by_user_id(cls, user_id):
+        conn = sqlite3.connect('restaurant_data.db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT order_id FROM orders WHERE user_id=?', (user_id,))
+        order_ids = [order[0] for order in cursor.fetchall()]
+        conn.close()
+        return [Order.load_from_db(order_id) for order_id in order_ids]
 
-user1 = User(1, "rychardsson")
-user1.place_order(["Item1", "Item2", "Item3"], 50.00)
-user1.place_order(["Item4", "Item5"], 30.00)
+if __name__ == "__main__":
+    user_id = 1
+    user1 = User(user_id, "rychardsson")
 
-user1.view_order_history()
+    user1.place_order(["Item1", "Item2", "Item3"], 50.00)
+    user1.place_order(["Item4", "Item5"], 30.00)
 
-user1.reorder_favorite(1)
+    user1.view_order_history()
+
+    user1.reorder_favorite(1)

@@ -1,69 +1,43 @@
-class MenuItem:
-    def __init__(self, name, price):
-        self.name = name
-        self.price = price
+import sqlite3
 
-class Menu:
+class Analytics:
     def __init__(self):
-        self.items = []
+        self.conn = sqlite3.connect('restaurant_data.db')
+        self.cursor = self.conn.cursor()
 
-    def add_item(self, item):
-        self.items.append(item)
+    def get_total_orders(self):
+        self.cursor.execute('SELECT COUNT(*) FROM orders')
+        result = self.cursor.fetchone()
+        return result[0] if result else 0
 
-class Customer:
-    def __init__(self, name):
-        self.name = name
+    def get_total_customers(self):
+        self.cursor.execute('SELECT COUNT(*) FROM customers')
+        result = self.cursor.fetchone()
+        return result[0] if result else 0
 
-class Order:
-    def __init__(self, customer):
-        self.customer = customer
-        self.items = []
+    def get_popular_dishes(self, top_n=5):
+        self.cursor.execute('SELECT products FROM orders')
+        results = self.cursor.fetchall()
+        all_products = [product for result in results for product in result[0].split(', ')]
+        dish_counts = {dish: all_products.count(dish) for dish in set(all_products)}
+        sorted_dishes = sorted(dish_counts.items(), key=lambda x: x[1], reverse=True)
+        return sorted_dishes[:top_n]
 
-    def add_item(self, item, quantity=1):
-        self.items.extend([item] * quantity)
-
-    def calculate_total(self):
-        total = sum(item.price for item in self.items)
-        return total
-
-class Restaurant:
-    def __init__(self, name):
-        self.name = name
-        self.menu = Menu()
-        self.orders = []
-
-    def add_order(self, order):
-        self.orders.append(order)
-
-    def generate_report(self):
-        print(f"Restaurant: {self.name}")
-        print("Orders:")
-        for i, order in enumerate(self.orders, 1):
-            total = order.calculate_total()
-            print(f"Order {i}: Customer {order.customer.name}, Total: ${total}")
+    def close_connection(self):
+        self.conn.close()
 
 if __name__ == "__main__":
-    my_restaurant = Restaurant("My Restaurant")
+    analytics = Analytics()
 
-    burger = MenuItem("Burger", 10.99)
-    pizza = MenuItem("Pizza", 12.99)
-    salad = MenuItem("Salad", 7.99)
+    total_orders = analytics.get_total_orders()
+    print(f"Total Orders: {total_orders}")
 
-    my_restaurant.menu.add_item(burger)
-    my_restaurant.menu.add_item(pizza)
-    my_restaurant.menu.add_item(salad)
+    total_customers = analytics.get_total_customers()
+    print(f"Total Customers: {total_customers}")
 
-    alice = Customer("Alice")
-    ryc = Customer("ryc")
+    popular_dishes = analytics.get_popular_dishes()
+    print("Popular Dishes:")
+    for dish, count in popular_dishes:
+        print(f"- {dish}: {count} orders")
 
-    order1 = Order(alice)
-    order1.add_item(burger, quantity=2)
-    order1.add_item(pizza)
-
-    order2 = Order(ryc)
-    order2.add_item(salad, quantity=3)
-
-    my_restaurant.add_order(order1)
-    my_restaurant.add_order(order2)
-
-    my_restaurant.generate_report()
+    analytics.close_connection()
